@@ -1,0 +1,96 @@
+body {
+  background-color: #0d0d0d;
+  color: #e0e0e0;
+  font-family: 'Segoe UI', Roboto, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+}
+
+h1 {
+  color: #ffa600;
+  text-shadow: 0 0 10px #d48a00;
+}
+
+.uploader {
+  background: #1a1a1a;
+  border: 2px solid #333;
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  width: 420px;
+  box-shadow: 0 0 16px rgba(0, 0, 0, 0.5);
+}
+
+input[type="file"], select, input[type="number"] {
+  margin: 1rem 0;
+  padding: 0.5rem;
+  width: 90%;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #121212;
+  color: #e0e0e0;
+}
+
+::file-selector-button {
+  border: 1px solid #333;
+  padding: 5px 10px;
+  border-radius: 5px;
+  background-color: #7700ff;
+  color: white;
+}
+
+/* Убираем стандартные стрелки */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+button {
+  background: #ffb731;
+  color: black;
+  border: none;
+  padding: 0.8rem 1.5rem;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: background 0.3s, transform 0.2s;
+}
+
+button:hover {
+  background: #ffa600;
+  transform: scale(1.05);
+  color: white;
+}
+
+#downloadBtn {
+  background: #7700ff;
+  color: white;
+}
+
+#downloadBtn:hover {
+  background: #a14fff;
+  color: black;
+}
+
+img {
+  margin-top: 2rem;
+  max-width: 600px;
+  border-radius: 12px;
+  border: 2px solid #333;
+  box-shadow: 0 0 12px rgba(255, 217, 0, 0.356);
+}
+
+.params {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.params.visible {
+  display: flex;
+}
