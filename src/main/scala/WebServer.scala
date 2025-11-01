@@ -17,13 +17,13 @@ import scala.util.Random
 
 object WebServer extends IOApp {
 
-  // ---------- ГЛАВНЫЙ РОУТ ----------
+  // ---------- Form Post ----------
   val routes: HttpRoutes[IO] = HttpRoutes.of[IO] { req =>
     if (req.method == Method.POST && req.uri.path.renderString == "/process") {
       req.decode[org.http4s.multipart.Multipart[IO]] { multipart =>
 
         val process: IO[Response[IO]] = for {
-          // Извлекаем файл
+          // Get file
           filePart <- IO.fromOption(multipart.parts.find(_.name.contains("file")))(
                         new Exception("File not found in form-data")
                       )
@@ -31,7 +31,7 @@ object WebServer extends IOApp {
           img <- IO(ImageIO.read(new ByteArrayInputStream(bytes)))
           _ <- IO.raiseWhen(img == null)(new RuntimeException("Не удалось прочитать изображение"))
 
-          // Параметры
+          // Parameters from the form
           effect <- multipart.parts.find(_.name.contains("effect"))
                       .map(p => p.bodyText.compile.string.map(_.trim))
                       .getOrElse(IO.pure("cinematic"))
@@ -46,14 +46,14 @@ object WebServer extends IOApp {
 
           _ <- IO.println(s"Effect: $effect, shift=$glitchShift, intensity=$glitchIntensity")
 
-          // Генерация GlitchData
+          // Generate GlitchData
           glitchDataOpt <- if (effect == "glitch") generateGlitchData(img, glitchShift, glitchIntensity)
                            else IO.pure(None)
 
-          // Применяем pipeline
+          // Pipeline
           processed <- IO(ImagePipeline.pipeline(img, effect, glitchData = glitchDataOpt))
 
-          // Конвертируем в PNG
+          // Convert png
           bytesOut <- IO {
             val baos = new ByteArrayOutputStream()
             ImageIO.write(processed, "png", baos)
@@ -64,16 +64,16 @@ object WebServer extends IOApp {
 
         } yield resp
 
-        // Безопасная обработка ошибок
+        // Error handling
         process.handleErrorWith { e =>
-          IO.println(s"❌ Ошибка обработки: ${e.getMessage}") *> 
+          IO.println(s"Ошибка обработки: ${e.getMessage}") *> 
             BadRequest(s"Ошибка: ${e.getMessage}")
         }
       }
     } else NotFound("Route not found")
   }
 
-  // ---------- Генерация GlitchData ----------
+  // ---------- GlitchData ----------
   private def generateGlitchData(img: java.awt.image.BufferedImage, maxShift: Int, intensity: Int): IO[Option[Transformations.GlitchData]] =
     IO {
       val rand = new Random()
@@ -113,7 +113,7 @@ object WebServer extends IOApp {
       Some(Transformations.GlitchData(rShift, gShift, bShift, rNoise, gNoise, bNoise))
     }
 
-  // ---------- Статика ----------
+  // ---------- Routes ----------
   val staticRoutes = fileService[IO](FileService.Config(
     systemPath = "src/main/resources",
     pathPrefix = "/"
@@ -124,7 +124,7 @@ object WebServer extends IOApp {
     "/process" -> routes
   ).orNotFound
 
-  // ---------- Запуск сервера ----------
+  // ---------- Server ----------
   override def run(args: List[String]): IO[ExitCode] =
     for {
       _ <- IO.println("🚀 Server started on http://localhost:8080")

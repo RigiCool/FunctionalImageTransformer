@@ -14,3 +14,4 @@ lazy val root = (project in file("."))
       "org.http4s" %% "http4s-server" % "0.23.32"
     )
   )
+

@@ -9,10 +9,9 @@ object Transformations {
   case class GlitchData(rShift: Array[Int], gShift: Array[Int], bShift: Array[Int],
                       rNoise: Array[Array[Int]], gNoise: Array[Array[Int]], bNoise: Array[Array[Int]])
 
-  /** Безопасное ограничение значений */
+  // RGB color limitation
   private def clamp(v: Double): Int = Math.min(255, Math.max(0, v)).toInt
 
-  /** Универсальный чистый трансформер изображения */
   @tailrec
   private def processPixels(
       img: BufferedImage,
@@ -41,7 +40,7 @@ object Transformations {
     out
   }
 
-  /** Приведение к более нейтральной серости и стабилизация тонов */
+  // Image color stabilization
   private def stabilizeGray(c: Color): Color = {
     val avg = (c.getRed + c.getGreen + c.getBlue) / 3.0
     val factor = 0.9 + 0.2 * ((avg - 128) / 128.0)
@@ -51,7 +50,7 @@ object Transformations {
     new Color(r, g, b)
   }
 
-  /** Анализ среднего цвета изображения */
+  // Image average color analysis
   private def averageColor(img: BufferedImage): (Double, Double, Double) = {
     val width  = img.getWidth
     val height = img.getHeight
@@ -62,8 +61,8 @@ object Transformations {
     (totals._1 / (width * height), totals._2 / (width * height), totals._3 / (width * height))
   }
 
-  /** Основной умный фильтр с выбором цветовой схемы */
-  def smartFilter(img: BufferedImage): BufferedImage = {
+  // Cinematic smart filter
+  def cinematicFilter(img: BufferedImage): BufferedImage = {
     val stabilized = transform(img)(stabilizeGray)
     val (rAvg, gAvg, bAvg) = averageColor(stabilized)
 
@@ -76,6 +75,7 @@ object Transformations {
     transform(colored)(enhanceContrastAndSaturation)
   }
 
+  // Color grading orange-blue
   private def tealOrangeScheme(c: Color): Color = {
     val brightness = 0.299*c.getRed + 0.587*c.getGreen + 0.114*c.getBlue
     if brightness < 128 then new Color(
@@ -90,6 +90,7 @@ object Transformations {
     )
   }
 
+  // Color grading red-green
   private def redGreenScheme(c: Color): Color = {
     val brightness = 0.299*c.getRed + 0.587*c.getGreen + 0.114*c.getBlue
     if brightness < 128 then new Color(
@@ -104,24 +105,25 @@ object Transformations {
     )
   }
 
+  // Color grading violet-yellow
   private def violetYellowScheme(c: Color): Color = {
     val brightness = 0.299 * c.getRed + 0.587 * c.getGreen + 0.114 * c.getBlue
 
     if (brightness < 128)
       new Color(
-        clamp(c.getRed * 1.05 + c.getBlue * 0.1),  // меньше добавки синего к красному
-        clamp(c.getGreen * 0.95),                  // чуть меньше гасим зелёный
-        clamp(c.getBlue * 1.1)                     // лёгкое увеличение синего
+        clamp(c.getRed * 1.05 + c.getBlue * 0.1),
+        clamp(c.getGreen * 0.95),
+        clamp(c.getBlue * 1.1)
       )
     else
       new Color(
-        clamp(c.getRed * 1.08 + 5),                // мягче осветляем
+        clamp(c.getRed * 1.08 + 5),
         clamp(c.getGreen * 1.05 + 5),
-        clamp(c.getBlue * 0.9)                     // немного убираем синеву
+        clamp(c.getBlue * 0.9)
       )
   }
 
-
+  // Image contrast and saturation update
   private def enhanceContrastAndSaturation(c: Color): Color = {
     val contrast = 1.05
     val sat = 1.1
@@ -138,13 +140,12 @@ object Transformations {
     new Color(nr, ng, nb)
   }
 
-  /** Чистый Glitch */
-  /** Реалистичный glitch-эффект: смещение строк, RGB рассинхрон и артефакты */
-  def glitchChannelsPure(
+  // Glitch effect
+  def glitchFilter(
       img: BufferedImage, 
       data: GlitchData, 
-      intensity: Int = 8,   // умножает шум
-      maxShift: Int = 10    // ограничивает сдвиг каналов
+      intensity: Int = 8,   // multiply noise
+      maxShift: Int = 10    // shift limitation
   ): BufferedImage = {
     val width  = img.getWidth
     val height = img.getHeight
@@ -175,12 +176,12 @@ object Transformations {
     out
   }
 
-  // Вспомогательная функция для ограничения сдвига
+  // Glitch shift limitation
   private def clampShift(value: Int, maxShift: Int): Int =
     Math.min(maxShift, Math.max(-maxShift, value))
 
-  /** Чистый Noir */
-  def noirPure(img: BufferedImage, intensity: Double = 1.0, grain: Double = 0.4): BufferedImage = {
+  // Noir effect
+  def noirFilter(img: BufferedImage, intensity: Double = 1.0, grain: Double = 0.4): BufferedImage = {
     val width = img.getWidth
     val height = img.getHeight
     val out = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)
@@ -198,8 +199,8 @@ object Transformations {
     out
   }
 
-  /** Чистый RetroFilm — принимает массив случайных чисел */
-  def retroFilmPure(img: BufferedImage, intensity: Double = 2, vignette: Double = 0.4): BufferedImage = {
+  // Retro effect
+  def retroFilter(img: BufferedImage, intensity: Double = 2, vignette: Double = 0.4): BufferedImage = {
     val width  = img.getWidth
     val height = img.getHeight
     val out    = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB)

@@ -1,18 +1,13 @@
-// ===============================
-// 🧠 ЧИСТЫЕ ФУНКЦИИ (NO SIDE EFFECTS)
-// ===============================
-
-// Получение элемента по id (вспомогательная, чистая в смысле декларации)
 const el = (id) => document.getElementById(id);
 
-// Управление видимостью (возвращает новый стиль, не мутирует DOM)
+// Control visibility using diplay type style
 const computeVisibility = (visible, type = "block") =>
   visible ? type : "none";
 
-// Решаем, нужно ли показывать параметры для эффекта
+// Glitch parameters visibility control
 const shouldShowParams = (effect) => effect === "glitch";
 
-// Формируем данные формы для загрузки
+// Form data
 const createFormData = (file, data) => {
   const formData = new FormData();
   Object.entries(data).forEach(([k, v]) => formData.append(k, v));
@@ -20,7 +15,7 @@ const createFormData = (file, data) => {
   return formData;
 };
 
-// Конвертация Blob → base64
+// Convertion Blob to Base64
 const blobToBase64 = (blob) =>
   new Promise((resolve, reject) => {
     const reader = new FileReader();
@@ -29,11 +24,11 @@ const blobToBase64 = (blob) =>
     reader.readAsDataURL(blob);
   });
 
-// Сохранение и загрузка из sessionStorage
+// Session storage load and save
 const saveSession = (key, value) => sessionStorage.setItem(key, value);
 const loadSession = (key) => sessionStorage.getItem(key);
 
-// Создание ссылки для скачивания (возвращает элемент, не кликает!)
+// Image download URL
 const createDownloadLink = (dataUrl, filename = "image.png") => {
   const link = document.createElement("a");
   link.href = dataUrl;
@@ -41,17 +36,12 @@ const createDownloadLink = (dataUrl, filename = "image.png") => {
   return link;
 };
 
-// ===============================
-// ⚙️ ЭФФЕКТЫ (IO ACTIONS)
-// ===============================
-
-// Управление параметрами глитча
+// Render page objects
 const renderParamsVisibility = (effect) => {
   const params = el("glitchParams");
   params.style.display = computeVisibility(shouldShowParams(effect), "flex");
 };
 
-// Отображение изображения
 const renderImage = (dataUrl) => {
   const img = el("output");
   const btn = el("downloadBtn");
@@ -60,7 +50,6 @@ const renderImage = (dataUrl) => {
   btn.style.display = "inline-block";
 };
 
-// Выполнение загрузки и обработки изображения
 const uploadImage = async () => {
   const file = el("fileInput").files[0];
   if (!file) return alert("Выбери изображение!");
@@ -74,32 +63,29 @@ const uploadImage = async () => {
   try {
     const response = await fetch("/process", { method: "POST", body: formData });
 
-    // 1️⃣ Ошибка от сервера (HTTP)
+    // Server error handling
     if (!response.ok) {
       console.error(`Server error: ${response.status} ${response.statusText}`);
       alert("Ошибка при обработке изображения! Сервер не смог выполнить запрос.");
       return;
     }
 
-    // 2️⃣ Корректный ответ — читаем blob
     const blob = await response.blob();
     const imgURL = URL.createObjectURL(blob);
     renderImage(imgURL);
 
-    // 💾 Безопасно сохраняем только ссылку (чтобы не было QuotaExceededError)
+    // Save upgraded image
     sessionStorage.setItem("processedImageURL", imgURL);
     console.log("✅ Image processed and saved as blob URL");
 
   } catch (err) {
-    // 3️⃣ Ошибка уровня сети или клиента (fetch, file, JS)
     console.error("Client/network error:", err);
     console.warn("⚠️ Ошибка сети или проблемы с подключением, но не с сервером.");
-    // Здесь alert не обязателен — можно логировать в консоль
   }
 };
 
 
-// Скачивание изображения
+// Download image
 const downloadImage = () => {
   const saved = loadSession("processedImage");
   if (!saved) return;
@@ -107,22 +93,17 @@ const downloadImage = () => {
   link.click();
 };
 
-// Чистая функция для ограничения числа
 const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
 
-// Получение значения input с ограничением
+// Imput value limitation
 const getClampedInputValue = (id, min, max) => {
   const elInput = el(id);
   if (!elInput) return min;
   const val = parseInt(elInput.value, 10);
   const clamped = clamp(isNaN(val) ? min : val, min, max);
-  elInput.value = clamped; // обновляем поле, чтобы отразить ограничение
+  elInput.value = clamped;
   return clamped;
 };
-
-// ===============================
-// 🚀 ИНИЦИАЛИЗАЦИЯ (MAIN ENTRY)
-// ===============================
 
 const init = () => {
   const saved = loadSession("processedImage");

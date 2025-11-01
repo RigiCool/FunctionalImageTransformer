@@ -15,12 +15,12 @@ object ImagePipeline {
     ): BufferedImage = {
 
       effect match {
-        case "cinematic" => smartFilter(img)
-        case "retro"     => retroFilmPure(img, intensity = 2, vignette = 0.5)
-        case "noir"      => noirPure(img, intensity = 1.0, grain = 0.4)
+        case "cinematic" => cinematicFilter(img)
+        case "retro"     => retroFilter(img, intensity = 2, vignette = 0.5)
+        case "noir"      => noirFilter(img, intensity = 1.0, grain = 0.4)
         case "glitch"    =>
           glitchData match {
-            case Some(data) => glitchChannelsPure(img, data, glitchIntensity, glitchShift)
+            case Some(data) => glitchFilter(img, data, glitchIntensity, glitchShift)
             case None       => throw new IllegalArgumentException("GlitchData must be provided for glitch effect")
           }
         case _ => smartFilter(img)

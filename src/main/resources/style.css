@@ -1,3 +1,5 @@
+/* Main styles */
+
 body {
   background-color: #0d0d0d;
   color: #e0e0e0;
@@ -41,12 +43,14 @@ input[type="file"], select, input[type="number"] {
   color: white;
 }
 
-/* Убираем стандартные стрелки */
+/* Remove standart spin buttons */
 input[type=number]::-webkit-inner-spin-button,
 input[type=number]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+
+/* Button */
 
 button {
   background: #ffb731;
@@ -75,6 +79,8 @@ button:hover {
   color: black;
 }
 
+/* Image */
+
 img {
   margin-top: 2rem;
   max-width: 600px;
@@ -82,6 +88,8 @@ img {
   border: 2px solid #333;
   box-shadow: 0 0 12px rgba(255, 217, 0, 0.356);
 }
+
+/* Parameters */
 
 .params {
   display: none;
